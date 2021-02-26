@@ -87,6 +87,21 @@ func (m *Model) Lookup(word string, n int) (*[]QueryResult, bool) {
 	return &res, true
 }
 
+// Compare does a word2vec comparison between two words and
+// returns a similarity score if both words exist in the model,
+// else the result bool is false.
+func (m *Model) Compare(wordA, wordB string) (float64, bool) {
+	vecA, ok := m.Data[wordA]
+	if !ok {
+		return .0, false
+	}
+	vecB, ok := m.Data[wordB]
+	if !ok {
+		return .0, false
+	}
+	return score(vecA, vecB), true
+}
+
 // Prune removes all words in the model that are not members
 // in the specified slice.
 func (m *Model) Prune(include *[]string) bool {
