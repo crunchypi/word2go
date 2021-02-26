@@ -18,6 +18,9 @@ var (
 		"lamp": {"lamps", "bulb", "incandescent", "halogen"},
 		"sofa": {"couches", "comfy", "cushions", "sofas"},
 	}
+	knownScores = map[string]QueryResult{
+		"dog": {Word: "cat", SimiScore: 0.921801},
+	}
 	// What not to delete when doing pruning. This is all the
 	// words in the test cases above.
 	pruneInclude = []string{
@@ -63,6 +66,23 @@ func checkCorrectness(m *Model) error {
 func TestLookup(t *testing.T) {
 	if err := checkCorrectness(model); err != nil {
 		t.Error(err)
+	}
+}
+
+func TestCompare(t *testing.T) {
+	for k, v := range knownScores {
+		r, ok := model.Compare(k, v.Word)
+		if !ok {
+			t.Errorf("lookup failed for %s \n", k)
+		}
+		// # This is a hack - float64 comparison can be tricky..
+		scoreA := fmt.Sprintf("%f", r)
+		scoreB := fmt.Sprintf("%f", v.SimiScore)
+
+		if scoreA != scoreB {
+			t.Errorf("wrong res for words %s and %s: %s (want %s)\n",
+				k, v.Word, scoreA, scoreB)
+		}
 	}
 }
 

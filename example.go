@@ -41,6 +41,14 @@ func main() {
 		fmt.Printf("no. %d : %s %f\n", i, v.Word, v.SimiScore)
 	}
 
+	// # Direct comparison of words is also possible;
+	wordA, wordB := "dog", "cat"
+	score, ok := m.Compare(wordA, wordB)
+	if !ok {
+		panic("could not compare two words!")
+	}
+	fmt.Printf("simi score for '%s' and '%s' is %f\n", wordA, wordB, score)
+
 	// # Pruning reduces the model, it removes any word that
 	// # is not inside the specified slice.
 	if ok := m.Prune(&[]string{}); !ok {
