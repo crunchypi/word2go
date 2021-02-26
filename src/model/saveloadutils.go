@@ -2,8 +2,10 @@ package model
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strconv"
 	"strings"
@@ -33,6 +35,28 @@ func useFile(path string, newF bool, task func(f *os.File) error) error {
 		}
 	}()
 	return task(_f)
+}
+func readFileLineCount(path string) (int, error) {
+	count := 0
+	err := useFile(path, false, func(f *os.File) error {
+		buf := make([]byte, 32*1024)
+		lineSep := []byte{'\n'}
+
+		for {
+			c, err := f.Read(buf)
+			count += bytes.Count(buf[:c], lineSep)
+
+			switch {
+			case err == io.EOF:
+				return nil
+
+			case err != nil:
+				return nil
+			}
+		}
+
+	})
+	return count, err
 }
 
 // readFileRows iterates over all rows in a file and executes
@@ -76,10 +100,16 @@ func strToKeyVals(s string) (string, []float64, error) {
 // to print progress; whether or not to stop if any issue occurs (such
 // as bad text-file/model format).
 func fileToModel(path string, verbose, strict bool) (*Model, error) {
-	m := Model{Data: make(map[string][]float64)}
+	// # Implicit linecount because that seems to increase performance,
+	// # likely because it reduces the resizing of the map.
+	lineCount, err := readFileLineCount(path)
+	if err != nil {
+		return nil, err
+	}
+	m := Model{Data: make(map[string][]float64, lineCount)}
 	i := 0
 
-	err := readFileRows(path, func(s string) bool {
+	err = readFileRows(path, func(s string) bool {
 		key, val, err := strToKeyVals(s)
 		if err != nil && strict {
 			return false
@@ -90,7 +120,8 @@ func fileToModel(path string, verbose, strict bool) (*Model, error) {
 
 		if verbose {
 			i++
-			fmt.Printf("\r scanned %d rows in '%s'", i, path)
+			percent := 100. / float32(lineCount) * float32(i)
+			fmt.Printf("\r progresss: %.4f%% (%d lines)", percent, i)
 		}
 		return true
 	})
