@@ -8,7 +8,8 @@ import (
 )
 
 var (
-	pathToModel = "../../data/examplemodel.txt"
+	pathToModelSmall = "../../data/examplemodel.txt"
+	pathToModelLarge = "../../data/glove/glove.6B.100d.txt"
 
 	model *Model
 
@@ -31,7 +32,7 @@ var (
 )
 
 func reset() {
-	m, err := Load(pathToModel, true, true)
+	m, err := Load(pathToModelSmall, true, true)
 	if err != nil {
 		panic(err.Error)
 	}
