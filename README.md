@@ -6,7 +6,8 @@ A very simple and performant word2vec _reader_ -- created because the readers I 
 
 Features are (examples are listed further down).
 - import a word2vec model (example is found in ./data/examplemodel.txt)
-- lookup a word2vec relationship.
+- lookup N closest neighbours (N word-score pairs) of a word.
+- get similarity of two words.
 - pruning (reducing the vocabulary in the model type)
 - saving the model type
 
@@ -47,7 +48,7 @@ func myFunc() {
 
 
 
-##### Lookup with imported model:
+##### Lookup (N closest neighbours of a word) with imported model:
 ```
 import (
   "fmt"
@@ -75,8 +76,33 @@ func myFunc() {
 ```
 
 
+##### Compare two words:
+```
+import (
+  "fmt"
+  "github.com/crunchypi/word2go/src/model"
+)
 
-##### Lookup with imported model:
+func myFunc() {
+  m, _ := model.Load("./data/examplemodel.txt", true, true)
+  
+  // # Direct comparison of two words;
+  wordA, wordB := "dog", "cat"
+  score, ok := m.Compare(wordA, wordB)
+  if !ok {
+      // # This might occur if one of the words
+      // # isn't in the model.
+      panic("could not compare two words!")
+  }
+  fmt.Println("simi score for '%s' and '%s' is %f\n", wordA, wordB, score)
+  ...
+}
+
+```
+
+
+
+##### Pruning:
 ```
 import "github.com/crunchypi/word2go/src/model"
 
